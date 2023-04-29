@@ -9,9 +9,19 @@ describe('Czechitas Login Page', async () => {
         await browser.reloadSession();
 
         await browser.url('/prihlaseni');
-
+        
         await browser.pause(5000);
 
+        const windowSize = await browser.getWindowSize();
+        console.log(windowSize)
+        
+        await browser.saveScreenshot('login_page.png');
+        console.log('Lili')
+        const emailField = await $('#email')
+        
+        console.log(await emailField.getHTML())
+
+        const button = await $('.btn-primary') 
     });
 
 });
