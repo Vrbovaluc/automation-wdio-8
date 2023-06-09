@@ -1,67 +1,128 @@
 import {username, password} from './fixtures.js'
+
 // import LoginPage from '../pageobjects/login.page'
 // import ApplicationsPage from '../pageobjects/applications.page'
 
-describe('Czechitas Login Page', async () => {
+describe('login', async () => {
 
-    it('should open login page', async () => {
-
+    beforeEach (async () => {
         await browser.reloadSession();
-
         await browser.url('/prihlaseni');
-        
-        // najdi políčka email a password
+    });
 
+    afterEach(async () => {
+        await browser.pause(5000);
+    });
+        
+    it('should show login form', async () => {
         const emailField = $('#email');
-        console.log(await emailField.getHTML());
+        console.log('Email field is dislayed: ' + await emailField.isDisplayed());
+        console.log('Email field is dislayed: ' + await emailField.isEnabled());
 
         const passwordField = $('#password');
-        console.log(await passwordField.getHTML());
+        console.log('Password field is dislayed: ' + await passwordField.isDisplayed());
+        console.log('Password field is dislayed: ' + await passwordField.isEnabled());
+
+        const loginButton = $('.btn-primary');
+        console.log('Login button is dislayed: ' + await loginButton.isDisplayed());
+        console.log('Login button text is: ' + await loginButton.getText());
+    });
+
+    it('should login with right credentials', async () => {
+        const emailField = $('#email');
+        const passwordField = $('#password');
+        const loginButton = $('.btn-primary');
+
+        await emailField.setValue(username);
+        await passwordField.setValue(password);
+        await loginButton.click();
         
-        // jsou políčka email a password displayed a enabled?
-        console.log('Email field is displayed: ' + await emailField.isDisplayed());
-        console.log('Password field is displayed: ' + await passwordField.isDisplayed());
-        console.log('Email field is enabled: ' + await emailField.isEnabled());
-        console.log('Password field is enabled: ' + await passwordField.isEnabled());
+        const userName = $('.navbar-right').$('[data-toggle="dropdown"]');
+        console.log('Momentálně je přihlášený uživatel: ' + await userName.getText());
 
-        // najdi tlačítko pro přihlášení a vypiš jeho text pomocí getText
+    });
 
-        const btnLogIn = $('.btn-primary');
-        console.log('Login button text: ' + await btnLogIn.getText());
 
-        // najdi odkaz a vypiš hodnotu jeho atributu href
-        console.log('Zapomněl jsi heslo? Here you go: ' + await $('.btn-link').getAttribute('href'));
+    it('should not login with wrong password', async () => {
+        const emailField = $('#email');
+        const passwordField = $('#password');
+        const loginButton = $('.btn-primary');
 
-        // přihlásit se do aplikace, použij setValue a click
+        await emailField.setValue(username);
+        await passwordField.setValue('invalid');
+        await loginButton.click();
 
-        await emailField.setValue('da-app.admin@czechitas.cz');
-        await passwordField.setValue('Czechitas123');
-        await btnLogIn.click();
+        const toastMessage = $('.toast-message');
+        console.log('Error: ' + await toastMessage.getText());
 
-        // Vypiš jméno přihlášeného uživatele
-        
-        const currentUser = $('.navbar-right').$('strong');
-        /* const currentUser = $('.navbar-right strong') */
-        console.log(await currentUser.getText());
+        const fieldError = $('.invalid-feedback');
+        console.log('Field error: ' + await fieldError.getText());        
 
-        // klikni na přihlášky
+    });
 
-        await $('=Přihlášky').click();
+ 
 
-        // najdi všechny řádky tabulky s přihláškami, vypiš počet řádků a text každého řádku
-        const rows = await $('.dataTable').$('tbody').$$('tr');
-        console.log('Tabulka obsahuje ' + rows.length + ' řádků');
+    it('log out', async () => {
 
-        for await (const row of rows) {
-            console.log(await row.getText())
-        };
+        const emailField = $('#email');
+        const passwordField = $('#password');
+        const loginButton = $('.btn-primary');
+        const userName = $('.navbar-right').$('[data-toggle="dropdown"]');
+        const logoutLink = $('#logout-link');
 
-        //BONUS - vyplňte něco do políčka 'hledat' a opět vypište všechny řádky
-        
-       
+        await emailField.setValue(username);
+        await passwordField.setValue(password);
+        await loginButton.click();
 
-        await browser.pause(5000);
+        console.log('User currently logged in: ' + await userName.getText());
+
+        await userName.click();
+        await logoutLink.click();
+
+        console.log('User is logged in: ' + await userName.isDisplayed());
+        console.log('Navbar text: ' + await $('.navbar-right').getText());
 
     });
 
 });
+
+describe('login', async () => {
+
+    beforeEach(async () => {
+        await browser.reloadSession();
+        await browser.url('/prihlaseni');
+        await $('#email').setValue(username);
+        await $('#password').setValue(password);
+        await $('.btn-primary').click();
+        await $('=Přihlášky').click();
+        await browser.pause(1000);
+    });
+
+    it('should list all applications', async () => {
+
+        const rows = await $('.dataTable').$('tbody').$$('tr');
+        console.log('There are ' + rows.length + ' rows in the table');
+        for (const row of rows) {
+            const rowText = await row.getText()
+            console.log(rowText);
+        }
+    });
+
+    it('should filter applications', async () => {
+
+        const searchInput = $('input[type="search"]');
+        const searchText = 'Karel';
+
+        await searchInput.setValue(searchText);
+        await browser.pause(1000);
+
+        const filteredRows = await $('.dataTable').$('tbody').$$('tr')
+        console.log('There are ' + filteredRows.length + ' filtered rows in the table');
+        for (const row of filteredRows) {
+            console.log(await row.getText());
+        }
+        
+    });
+});
+
+
