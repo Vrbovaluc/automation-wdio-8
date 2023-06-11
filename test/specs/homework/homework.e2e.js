@@ -15,24 +15,24 @@ describe('Should sign up', async () => {
     it('should show sing up form', async () => {
 
         const nameField = $('#name');
-        console.log('Name field is dislayed: ' + await nameField.isDisplayed());
-        console.log('Name field is dislayed: ' + await nameField.isEnabled());
-
+        await expect(nameField).toBeDisplayed();
+        await expect(nameField).toBeEnabled();
+        
         const emailField = $('#email');
-        console.log('Email field is dislayed: ' + await emailField.isDisplayed());
-        console.log('Email field is dislayed: ' + await emailField.isEnabled());
+        await expect(emailField).toBeDisplayed();
+        await expect(emailField).toBeEnabled();
 
         const passwordField = $('#password');
-        console.log('Password field is dislayed: ' + await passwordField.isDisplayed());
-        console.log('Password field is dislayed: ' + await passwordField.isEnabled());
+        await expect(passwordField).toBeDisplayed();
+        await expect(passwordField).toBeEnabled();
 
         const passwordConfirmField = $('#password-confirm');
-        console.log('Password field is displayed: ' + await passwordConfirmField.isDisplayed());
-        console.log('Password field is displayed: ' + await passwordConfirmField.isEnabled());
+        await expect(passwordConfirmField).toBeDisplayed();
+        await expect(passwordConfirmField).toBeEnabled();
 
         const loginButton = $('.btn-primary');
-        console.log('Login button is dislayed: ' + await loginButton.isDisplayed());
-        console.log('Login button text is: ' + await loginButton.getText());
+        await expect(loginButton).toBeDisplayed();
+        await expect(loginButton).toHaveText('Zaregistrovat');
 
     });
 
@@ -44,15 +44,16 @@ describe('Should sign up', async () => {
         const passwordField = $('#password');
         const passwordConfirmField = $('#password-confirm');
         const loginButton = $('.btn-primary');
+        const userFullName = ('Eliška Krásná')
 
-        await nameField.setValue('Eliška Krásná');
-        await emailField.setValue('eliska@email.cz');
+        await nameField.setValue(userFullName);
+        await emailField.setValue('eliska@gmail.com');
         await passwordField.setValue(password);
         await passwordConfirmField.setValue(password);
         await loginButton.click();
 
         const userNameDropdown = $('.navbar-right').$('[data-toggle="dropdown"]');
-        console.log('User currently logged in: ' + await userNameDropdown.getText());
+        await expect(await userNameDropdown.getText()).toEqual(userFullName);       
 
     });
 
@@ -72,25 +73,28 @@ describe('Should sign up', async () => {
 
     
         const invalidFeedback = $('.card-body').$('.invalid-feedback');
-        console.log('Your feedback: ' + await invalidFeedback.getText());       
+        await expect(await invalidFeedback.getText()).toEqual('Účet s tímto emailem již existuje');
+
     });
 
-    it.only('should not sign up with numbers only password', async () => {
+    it('should not sign up with numbers only password', async () => {
 
         const nameField = $('#name');
         const emailField = $('#email');
         const passwordField = $('#password');
         const passwordConfirmField = $('#password-confirm');
-        const loginButton = $('.btn-primary');
+        const loginButton = $('.btn-primary');        
 
         await nameField.setValue('Eliška Krásná');
-        await emailField.setValue('krasna@seznam.cz');
-        await passwordField.setValue('123456');
-        await passwordConfirmField.setValue('123456');
+        await emailField.setValue('krassna@seznam.cz');
+        await passwordField.setValue('abcdef');
+        await passwordConfirmField.setValue('abcdef');
         await loginButton.click();
 
         const invalidFeedback = $('.card-body').$('.invalid-feedback');
-        console.log('Your feedback: ' + await invalidFeedback.getText()); 
+        console.log('Your feedback: ' + await invalidFeedback.getText());
+        
+        await expect(await invalidFeedback).toBeExisting(); 
         
     });
 
