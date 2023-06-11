@@ -58,6 +58,8 @@ describe('Login Page', async () => {
         await expect(await emailField).toBeDisplayed();
         await expect(await passwordField).toBeDisplayed();
         await expect(await loginButton).toBeDisplayed();
+
+        await expect(await emailField).getText().toBeDisplayed();
     });
 
     it('should logout', async () => {

@@ -1,4 +1,4 @@
-import {username, password} from './fixtures.js'
+import {username, password, userFullName, expectedApplicationsPageRows} from './fixtures.js'
 
 // import LoginPage from '../pageobjects/login.page'
 // import ApplicationsPage from '../pageobjects/applications.page'
@@ -16,19 +16,28 @@ describe('login', async () => {
         
     it('should show login form', async () => {
         const emailField = $('#email');
-        console.log('Email field is dislayed: ' + await emailField.isDisplayed());
-        console.log('Email field is dislayed: ' + await emailField.isEnabled());
+        await expect(emailField).toBeDisplayed();
+        await expect(emailField).toBeEnabled();
 
         const passwordField = $('#password');
-        console.log('Password field is dislayed: ' + await passwordField.isDisplayed());
-        console.log('Password field is dislayed: ' + await passwordField.isEnabled());
+        await expect(passwordField).toBeDisplayed();
+        await expect(passwordField).toBeEnabled();
 
         const loginButton = $('.btn-primary');
-        console.log('Login button is dislayed: ' + await loginButton.isDisplayed());
-        console.log('Login button text is: ' + await loginButton.getText());
+        await expect(loginButton).toBeDisplayed();
+        await expect(loginButton).toHaveText('Přihlásit');
     });
 
-    it('should login with right credentials', async () => {
+    it('should show forgotten password button with right link', async () => {
+        const forgottenPasswordButton = $('.card-body').$('.btn-link');
+
+        await expect(forgottenPasswordButton).toHaveText('Zapomněli jste své heslo?');
+
+        await expect(await forgottenPasswordButton.getAttribute('href')).toEqual('https://team8-2022brno.herokuapp.com/zapomenute-heslo');
+
+    });
+
+    it('should login with valid credentials', async () => {
         const emailField = $('#email');
         const passwordField = $('#password');
         const loginButton = $('.btn-primary');
@@ -38,12 +47,12 @@ describe('login', async () => {
         await loginButton.click();
         
         const userName = $('.navbar-right').$('[data-toggle="dropdown"]');
-        console.log('Momentálně je přihlášený uživatel: ' + await userName.getText());
+        await expect(await userName.getText()).toEqual(userFullName);
 
     });
 
 
-    it('should not login with wrong password', async () => {
+    it('should not login with invalid credentials', async () => {
         const emailField = $('#email');
         const passwordField = $('#password');
         const loginButton = $('.btn-primary');
@@ -53,10 +62,12 @@ describe('login', async () => {
         await loginButton.click();
 
         const toastMessage = $('.toast-message');
-        console.log('Error: ' + await toastMessage.getText());
+        await expect(await toastMessage.getText()).toEqual('Některé pole obsahuje špatně zadanou hodnotu');
 
         const fieldError = $('.invalid-feedback');
-        console.log('Field error: ' + await fieldError.getText());        
+        await expect(fieldError).toBeExisting();      
+
+        await expect(await fieldError.getText()).toEqual('Tyto přihlašovací údaje neodpovídají žadnému záznamu.');
 
     });
 
@@ -74,13 +85,13 @@ describe('login', async () => {
         await passwordField.setValue(password);
         await loginButton.click();
 
-        console.log('User currently logged in: ' + await userName.getText());
+        await expect(await userName.getText()).toEqual(userFullName);
 
         await userName.click();
         await logoutLink.click();
 
-        console.log('User is logged in: ' + await userName.isDisplayed());
-        console.log('Navbar text: ' + await $('.navbar-right').getText());
+        await expect(await userName.isDisplayed()).toBeFalsy();
+        await expect(await $('.navbar-right').getText()).toEqual('Přihlásit');
 
     });
 
@@ -98,15 +109,32 @@ describe('login', async () => {
         await browser.pause(1000);
     });
 
-    it('should list all applications', async () => {
 
-        const rows = await $('.dataTable').$('tbody').$$('tr');
-        console.log('There are ' + rows.length + ' rows in the table');
+
+
+
+
+
+    it('should list all applications', async () => {
+    
+        const table = $('.dataTable').$('tbody');
+        const rows = await table.$$('tr');
+
+        await expect(await $('h1')).toHaveText('Přihlášky');
+        await expect(rows.length).toEqual(expectedApplicationsPageRows);
+        
         for (const row of rows) {
-            const rowText = await row.getText()
-            console.log(rowText);
+            const cols = await row.$$('td');
+            /* console.log(await cols[0].getText()); */
+            await expect(cols[0]).toHaveText(/^(?!\s*$).+/);
+            await expect(cols[1]).toHaveText(/(\d{2}.\d{2}.\d{4}|\d{2}.\d{2}. - \d{2}.\d{2}.\d{4})/);
+            await expect(cols[2]).toHaveText(['Bankovní převod', 'FKSP', 'Hotově', 'Složenka']);
+            await expect(cols[3]).toHaveText(/\d{1,3}(| \d{0,3}) Kč/);
         }
     });
+
+
+
 
     it('should filter applications', async () => {
 
